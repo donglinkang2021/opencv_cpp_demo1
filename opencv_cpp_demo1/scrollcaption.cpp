@@ -27,7 +27,6 @@ void onMouse(int event, int x, int y, int flags, void* userdata) {
         subtitleRegion = Rect(min(p.x, x), min(p.y, y), abs(x - p.x), abs(y - p.y));
         printf("x1=%d,x2=%d,y1=%d,y2=%d\n", p.x, x, p.y, y);
     }
-
 }
 
 void rollscript(string Filename);
