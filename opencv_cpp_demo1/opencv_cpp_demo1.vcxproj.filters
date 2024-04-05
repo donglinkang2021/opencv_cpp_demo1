@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="getSubtitlePics.cpp">
+    <ClCompile Include="concatSubtitle.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
