@@ -61,6 +61,7 @@ void concatenateSimilarFrames(const std::vector<cv::Mat>& frames) {
     cv::Mat concatenated_image = frames[0].clone();
     int frame_width = frames[0].cols;
     int frame_half_width = frame_width / 2;
+    std::cout << "frame width: " << frame_width << std::endl;
     int frame_height = frames[0].rows;
     cv::Rect roi_left(0, 0, frame_half_width, frame_height); // x, y, w, h
     cv::Rect roi_right(frame_half_width, 0, frame_half_width, frame_height);
@@ -112,7 +113,7 @@ void concatenateSimilarFrames(const std::vector<cv::Mat>& frames) {
 
 int main(int argc, char* argv[]) {
     // change this to your data path
-    std::string data_path = "..\\..\\data\\Sample2"; 
+    std::string data_path = "..\\..\\data\\Sample1"; 
 
     std::vector<cv::String> filenames;
     cv::String pattern = data_path + "\\*.jpg";
