@@ -7,7 +7,12 @@ int main(int argc, char* argv[]) {
     std::vector<cv::String> filenames;
     cv::glob(pattern, filenames, false);
 
-    for (const auto& filename : filenames) std::cout << filename << std::endl;
+    cv::Mat frame;
+    for (const auto& filename : filenames) {
+        frame = cv::imread(filename);
+        cv::imshow("frame", frame);
+        cv::waitKey(0);
+    }
     
     return 0;
 }
