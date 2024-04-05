@@ -3,7 +3,7 @@
 cv::Rect subtitleRegion;
 
 void onMouse(int event, int x, int y, int flags, void* userdata) {
-    static cv::Point point; // 用于保存鼠标左键按下时的坐标
+    static cv::Point point;
     if (event == cv::EVENT_LBUTTONDOWN)
         point = cv::Point(x, y);
     else if (event == cv::EVENT_LBUTTONUP) 
@@ -36,7 +36,7 @@ std::string getFrameNumber(const cv::String& filename) {
 int main(int argc, char* argv[]) {
 
     cv::String pattern = "..\\..\\data\\Sample1\\*.jpg"; 
-    cv::String result_dir = "..\\..\\data\\Result\\";
+    cv::String result_dir = "..\\..\\data\\Result\\Sample1\\";
 
     std::vector<cv::String> filenames;
     cv::glob(pattern, filenames, false);
