@@ -41,21 +41,42 @@ std::string getFrameNumber(const cv::String& filename) {
 
 // concatenate similar frames
 
+enum class SubTitleType {
+    FIXED,
+    MOVING
+};
 
-double calculateImageDifference(const cv::Mat& gray_image1, const cv::Mat& gray_image2) {
+double calculateImageDifference(const cv::Mat& image1, const cv::Mat& image2) {
     cv::Mat diff;
-    cv::absdiff(gray_image1, gray_image2, diff);
+    cv::absdiff(image1, image2, diff);
     cv::Scalar diff_sum = cv::sum(diff);
     
     double diff_sum_total = 0;
-    size_t num_channels = gray_image1.channels();
+    size_t num_channels = image1.channels();
     for (size_t i = 0; i < num_channels; ++i) diff_sum_total += diff_sum[i];
 
-    double num_pixels = gray_image1.rows * gray_image1.cols;
+    double num_pixels = image1.rows * image1.cols;
     return diff_sum_total / (num_pixels * num_channels);
 }
 
-void concatenateSimilarFrames(const std::vector<cv::Mat>& frames) {
+SubTitleType detectSubtitleType(const std::vector<cv::Mat>& frames) {
+    double diff_sum = 0;
+    SubTitleType type;
+    size_t num_samples = std::min(frames.size() - 1, (size_t)10);
+    for (size_t i = 0; i < num_samples; ++i) {
+        cv::Mat image1, image2;
+        image1 = frames[i];
+        image2 = frames[i + 1];
+        diff_sum += calculateImageDifference(image1, image2);
+    }
+    double avg_diff = diff_sum / num_samples;
+    if (avg_diff < 10) type = SubTitleType::FIXED;
+    else type = SubTitleType::MOVING;
+    return type;
+}
+
+
+void concatenateMovingFrames(const std::vector<cv::Mat>& frames) {
     if (frames.empty()) return;
 
     cv::Mat concatenated_image = frames[0].clone();
@@ -109,11 +130,41 @@ void concatenateSimilarFrames(const std::vector<cv::Mat>& frames) {
     cv::waitKey(0);
 }
 
+void binarizeImage(cv::Mat& image) {
+    cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
+    cv::threshold(image, image, 127, 255, cv::THRESH_BINARY);
+}
+
+void concatenateFixedFrames(const std::vector<cv::Mat>& frames) {
+    if (frames.empty()) return;
+    cv::Mat concatenated_image = frames[0].clone();
+    cv::Mat cur_template = frames[0].clone();
+    for (size_t i = 0; i < frames.size() - 1; ++i) {
+        double maxdiff = 0;
+        size_t max_index = 0;
+        for (size_t j = 0; j < 30; ++j) {
+            if (i + j >= frames.size()) break;
+            cv::Mat cur_frame_left = frames[i + j].clone();
+            double diff = calculateImageDifference(cur_template, cur_frame_left);
+            if (diff > maxdiff) {
+                maxdiff = diff;
+                max_index = j;
+            }
+        }
+        if (max_index < 10) continue;
+        i += max_index;
+        cv::vconcat(concatenated_image, frames[i], concatenated_image);
+        cur_template = frames[i].clone();
+    }
+    cv::imshow("Concatenated Fixed Frames", concatenated_image);
+    cv::waitKey(0);
+}
+
 
 
 int main(int argc, char* argv[]) {
     // change this to your data path
-    std::string data_path = "..\\..\\data\\Sample1"; 
+    std::string data_path = "..\\..\\data\\Sample3"; 
 
     std::vector<cv::String> filenames;
     cv::String pattern = data_path + "\\*.jpg";
@@ -141,6 +192,8 @@ int main(int argc, char* argv[]) {
         if (cv::waitKey(delay) == 27) break; // ESC key to quit
     }
 
-    concatenateSimilarFrames(frames);
+    SubTitleType subtitle_type = detectSubtitleType(frames);
+    if (subtitle_type == SubTitleType::FIXED) concatenateFixedFrames(frames);
+    else concatenateMovingFrames(frames);
     return 0;
 }
